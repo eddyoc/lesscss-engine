@@ -1,4 +1,4 @@
-<project name="MyProject" default="dist" basedir=".">
+<project name="MyProject" default="css" basedir=".">
 	<description>simple example build file</description>
 	<!-- set global properties for this build -->
 	<property name="src" location="src"/>
@@ -14,7 +14,8 @@
 	<target name="css">
 		<!-- Create the time stamp -->
 		<taskdef name="lesscss" classname="com.asual.lesscss.LessEngineTask" classpath="../../../target/lesscss-engine-1.0.41.jar" classpathref="libraries" />
-		<lesscss input="META-INF/test.css" output="test-compiled.css" />
-		<lesscss input="META-INF/test.css" />
+		<lesscss input="META-INF/fonts.css" output="test-output.css" />
+		<lesscss input="META-INF/multiple-imports.css" output="test-output.css" />
+		<lesscss input="META-INF/multiple-imports.css" output="test-output.css" />
 	</target>
 </project>
