@@ -1,0 +1,20 @@
+<project name="MyProject" default="dist" basedir=".">
+	<description>simple example build file</description>
+	<!-- set global properties for this build -->
+	<property name="src" location="src"/>
+	<property name="build" location="build"/>
+	<property name="dist"  location="dist"/>
+	<property name="maven.distro" location="/home/cimi/.m2/" />
+	<path id="libraries">
+		<fileset dir="${maven.distro}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="css">
+		<!-- Create the time stamp -->
+		<taskdef name="lesscss" classname="com.asual.lesscss.LessEngineTask" classpath="../../../target/lesscss-engine-1.0.41.jar" classpathref="libraries" />
+		<lesscss input="META-INF/test.css" output="test-compiled.css" />
+		<lesscss input="META-INF/test.css" />
+	</target>
+</project>
