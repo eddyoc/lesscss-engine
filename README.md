@@ -14,7 +14,10 @@ This is how you can integrate less in your buildfile:
 
 If you don't have/want to use Maven to build the sources, you can download the enhanced lesscss-engine jar directly from the downloads section of this repo.
 
-TODOs:
-* list dependecies here
-* add compressor capability to the task
+To run the task, the basic dependencies are:
+* Rhino (js-1.6R7.jar)  
+* Apache Commons Logging
+
+TODOs:  
+* add compressor capability to the task  
 * write tests to integrate the new capability
