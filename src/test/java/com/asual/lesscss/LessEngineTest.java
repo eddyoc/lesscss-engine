@@ -1,6 +1,4 @@
 /*
- * Copyright 2009 the original author or authors.
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,31 +34,31 @@ import org.junit.Test;
  * @author Eliot Sykes
  */
 public class LessEngineTest {
-	
+
 	private static LessEngine engine;
-	
+
 	@BeforeClass
 	public static void before() {
 		engine = new LessEngine();
 	}
-	
+
 	@Test
 	public void parse() throws LessException {
 		assertEquals("div {\n  width: 2;\n}\n", engine.compile("div { width: 1 + 1 }"));
 	}
-	
+
 	@Test
 	public void compileToString() throws LessException, IOException {
-		assertEquals("body {\n  color: #f0f0f0;\n}\n", 
-				engine.compile(getUrl("test.css")));
+		assertEquals("body {\n  color: #f0f0f0;\n}\n",
+				engine.compile(getResource("css/classpath.css")));
 	}
-	
+
 	@Test
 	public void compileToFile() throws LessException, IOException {
 		File tempDir = new File(System.getProperty("java.io.tmpdir"));
-		File tempFile = File.createTempFile("less.css", null, tempDir);
+		File tempFile = File.createTempFile("classpath.css", null, tempDir);
 		engine.compile(
-				new File(getUrl("test.css").getPath()),
+				new File(getResource("css/classpath.css").getPath()),
 				new File(tempFile.getAbsolutePath()));
 		FileInputStream fstream = new FileInputStream(tempFile.getAbsolutePath());
 		DataInputStream in = new DataInputStream(fstream);
@@ -94,42 +92,63 @@ public class LessEngineTest {
 				"  -webkit-border-radius: 10px;\n" +
 				"  -moz-border-radius: 10px;\n" +
 				"}\n";
-		assertEquals(expected, engine.compile(getUrl("multiple-imports.css")));
+		assertEquals(expected, engine.compile(getResource("css/multiple-imports.css")));
+	}
+
+	@Test
+	public void compileImages() throws LessException {
+		String expected = ".logo {\n" + 
+			"  background-image: url(../img/logo.png);\n" + 
+			"}\n";
+		assertEquals(expected, engine.compile(getResource("css/img.css")));
 	}
 	
+	@Test
+	public void compileSubdirImports() throws LessException, IOException {
+		engine.compile(getResource("less/root.less"));
+		engine.compile(getResource("less/subdir/import-from-root.less"));
+		engine.compile(getResource("less/import-from-subdir.less"));
+	}
+
 	@Test(expected = LessException.class)
 	public void testUndefinedErrorInput() throws IOException, LessException {
 		try {
-			engine.compile(getUrl("undefined-error.css"));
+			engine.compile(getResource("css/undefined-error.css"));
 		} catch (LessException e) {
 			assertTrue("is undefined error", e.getMessage().contains("Error: .bgColor is undefined (line 2, column 4)"));
 			throw e;
 		}
-		
 	}
- 
+
 	@Test(expected = LessException.class)
 	public void testSyntaxErrorInput() throws IOException, LessException {
 		try {
-			engine.compile(getUrl("syntax-error.css"));
+			engine.compile(getResource("css/syntax-error.css"));
 		} catch (LessException e) {
 			assertTrue("is syntax error", e.getMessage().contains("Syntax Error: Missing closing `}` (line -1, column -1)"));
 			throw e;
 		}
 	}
-	
+
 	@Test(expected = LessException.class)
 	public void testParseErrorInput() throws IOException, LessException {
 		try {
-			engine.compile(getUrl("parse-error.css"));
+			engine.compile(getResource("css/parse-error.css"));
 		} catch (LessException e) {
 			assertTrue("is parse error", e.getMessage().contains("Parse Error: Syntax Error on line 2"));
 			throw e;
 		}
 	}
 	
-	private URL getUrl(String filename) {
-		return getClass().getClassLoader().getResource("META-INF/" + filename);
+	@Test
+	public void testImportWithUrl() throws LessException {
+	    String expected = "a {\n  color: #dddddd;\n  background-image: url(img/logo.png);\n}\n";
+	    String result = engine.compile(getResource("less/import-from-subdir.less"));
+	    assertEquals(expected, result);
+	}
+
+	private URL getResource(String path) {
+		return getClass().getClassLoader().getResource("META-INF/" + path);
 	}
 
 }

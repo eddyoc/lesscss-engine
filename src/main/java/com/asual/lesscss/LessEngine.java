@@ -1,6 +1,4 @@
 /*
- * Copyright 2009-2010 the original author or authors.
- *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -54,6 +52,7 @@ public class LessEngine {
 			URL less = getClass().getClassLoader().getResource("META-INF/less.js");
 			URL engine = getClass().getClassLoader().getResource("META-INF/engine.js");
 			Context cx = Context.enter();
+			logger.warn("Using implementation version: " + cx.getImplementationVersion());
 			cx.setOptimizationLevel(9);
 			Global global = new Global();
 			global.init(cx);		  
@@ -83,6 +82,7 @@ public class LessEngine {
 	public String compile(URL input) throws LessException {
 		try {
 			long time = System.currentTimeMillis();
+			logger.debug("Compiling URL: " + input.getProtocol() + ":" + input.getFile());
 			String result = call(cf, new Object[] {input.getProtocol() + ":" + input.getFile(), getClass().getClassLoader()});
 			logger.debug("The compilation of '" + input + "' took " + (System.currentTimeMillis () - time) + " ms.");
 			return result;
@@ -94,6 +94,7 @@ public class LessEngine {
 	public String compile(File input) throws LessException {
 		try {
 			long time = System.currentTimeMillis();
+			logger.debug("Compiling File: " + "file:" + input.getAbsolutePath());
 			String result = call(cf, new Object[] {"file:" + input.getAbsolutePath(), getClass().getClassLoader()});
 			logger.debug("The compilation of '" + input + "' took " + (System.currentTimeMillis () - time) + " ms.");
 			return result;
@@ -128,47 +129,47 @@ public class LessEngine {
 			
 			Scriptable value = (Scriptable) ((JavaScriptException) root).getValue();
 			
-			boolean hasName = ScriptableObject.hasProperty((Scriptable) value, "name");
-			boolean hasType = ScriptableObject.hasProperty((Scriptable) value, "type");
+			boolean hasName = ScriptableObject.hasProperty(value, "name");
+			boolean hasType = ScriptableObject.hasProperty(value, "type");
 			
 			if (hasName || hasType) {
 				String errorType = "Error";
 				
 				if (hasName) {
-					String type = (String) ScriptableObject.getProperty(((Scriptable) value), "name");
+					String type = (String) ScriptableObject.getProperty(value, "name");
 					if ("ParseError".equals(type)) {
 						errorType = "Parse Error";
 					} else {
 						errorType = type + " Error";
 					}
 				} else if (hasType) {
-					Object prop = ScriptableObject.getProperty(((Scriptable) value), "type");
+					Object prop = ScriptableObject.getProperty(value, "type");
 					if (prop instanceof String) {
 						errorType = (String) prop + " Error"; 
 					}
 				}
 				
-				String message = (String) ScriptableObject.getProperty(((Scriptable) value), "message");
+				String message = (String) ScriptableObject.getProperty(value, "message");
 				
 				String filename = "";
 				if (ScriptableObject.hasProperty(value, "filename")) {
-					filename = (String) ScriptableObject.getProperty(((Scriptable) value), "filename"); 
+					filename = (String) ScriptableObject.getProperty(value, "filename"); 
 				}
 				
 				int line = -1;
 				if (ScriptableObject.hasProperty(value, "line")) {
-					line = ((Double) ScriptableObject.getProperty(((Scriptable) value), "line")).intValue(); 
+					line = ((Double) ScriptableObject.getProperty(value, "line")).intValue(); 
 				}
 				
 				int column = -1;
 				if (ScriptableObject.hasProperty(value, "column")) {
-					column = ((Double) ScriptableObject.getProperty(((Scriptable) value), "column")).intValue();
+					column = ((Double) ScriptableObject.getProperty(value, "column")).intValue();
 				}
 				
 				
 				List<String> extractList = new ArrayList<String>();
 				if (ScriptableObject.hasProperty(value, "extract")) {
-					NativeArray extract = (NativeArray) ScriptableObject.getProperty(((Scriptable) value), "extract");
+					NativeArray extract = (NativeArray) ScriptableObject.getProperty(value, "extract");
 					for (int i = 0; i < extract.getLength(); i++) {
 						if (extract.get(i, extract) instanceof String) {
 							extractList.add(((String) extract.get(i, extract)).replace("\t", " "));
