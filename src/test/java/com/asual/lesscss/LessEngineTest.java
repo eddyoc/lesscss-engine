@@ -56,6 +56,12 @@ public class LessEngineTest {
 				engine.compile("@import url('" + path + "'); body { color: @color; }"));
 	}
 
+    @Test
+    public void interpolateString() throws LessException {
+        assertEquals("body {\n  background: url(\"a.jpg\");\n}\n",
+                engine.compile("@filename: \"a.jpg\"; body { background: url(\"@{filename}\"); }"));
+    }
+
 	@Test
 	public void compileToString() throws LessException, IOException {
 		assertEquals("body {\n  color: #f0f0f0;\n}\n",
