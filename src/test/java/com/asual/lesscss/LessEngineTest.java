@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.junit.BeforeClass;
@@ -63,6 +64,28 @@ public class LessEngineTest {
     }
 
 	@Test
+	public void compileStringWithLocation() throws LessException {
+		/*
+		 * A template engine would extract the <style type="text/less"> block
+		 * from META-INF/template.html and compile it. Here, we're skipping the
+		 * extraction and passing the stylesheet body and template location 
+		 * to the engine directly.
+		 */
+		String in = "@import \"less/subdir/import-from-root.less\";\n" +
+		            "@import \"classpath:META-INF/less/import.less\";\n" +
+		            "body { color: @color; }";
+		String out = "a {\n" + 
+					 "  color: #dddddd;\n" + 
+				     "  background-image: url(img/logo.png);\n" + 
+					 "}\n" + 
+				     "body {\n" +
+				     "  color: #f0f0f0;\n" +
+				     "}\n";
+		assertEquals(out, engine.compile(in, getResource("template.html")
+				.toString(), false));
+	}
+
+	@Test
 	public void compileToString() throws LessException, IOException {
 		assertEquals("body {\n  color: #f0f0f0;\n}\n",
 				engine.compile(getResource("less/classpath.less")));
@@ -91,7 +114,7 @@ public class LessEngineTest {
 	@Test
 	public void compileToStringForMultipleImports() throws LessException, IOException {
 		String expected = "body {\n" +
-				"  font-family: Arial, Helvetica;\n" +
+				"  font-family: 'Helvetica Neue', Arial, sans-serif;\n" +
 				"}\n" +
 				"body {\n" +
 				"  width: 960px;\n" +
@@ -111,6 +134,14 @@ public class LessEngineTest {
 	}
 
 	@Test
+	public void compileToCompressedStringForMultipleImports() throws LessException, IOException {
+		String expected = "body{font-family:'Helvetica Neue',Arial,sans-serif}body{width:960px;margin:0}" + 
+				"#header{border-radius:5px;-webkit-border-radius:5px;-moz-border-radius:5px}" + 
+				"#footer{border-radius:10px;-webkit-border-radius:10px;-moz-border-radius:10px}";
+		assertEquals(expected, engine.compile(getResource("css/multiple-imports.css"), true));
+	}
+
+	@Test
 	public void compileImages() throws LessException {
 		String expected = ".logo {\n" + 
 			"  background-image: url(../img/logo.png);\n" + 
@@ -126,21 +157,11 @@ public class LessEngineTest {
 	}
 
 	@Test(expected = LessException.class)
-	public void testUndefinedErrorInput() throws IOException, LessException {
+	public void testNameErrorInput() throws IOException, LessException {
 		try {
-			engine.compile(getResource("less/undefined-error.less"));
+			engine.compile(getResource("less/name-error.less"));
 		} catch (LessException e) {
-			assertTrue("is undefined error", e.getMessage().contains("Error: .bgColor is undefined (line 2, column 4)"));
-			throw e;
-		}
-	}
-
-	@Test(expected = LessException.class)
-	public void testSyntaxErrorInput() throws IOException, LessException {
-		try {
-			engine.compile(getResource("less/syntax-error.less"));
-		} catch (LessException e) {
-			assertTrue("is syntax error", e.getMessage().contains("Syntax Error: Missing closing `}` (line -1, column -1)"));
+			assertTrue("Name Error", e.getMessage().contains("Name Error: .bgColor is undefined (line 2, column 4)"));
 			throw e;
 		}
 	}
@@ -150,7 +171,17 @@ public class LessEngineTest {
 		try {
 			engine.compile(getResource("less/parse-error.less"));
 		} catch (LessException e) {
-			assertTrue("is parse error", e.getMessage().contains("Parse Error: Syntax Error on line 2"));
+			assertTrue("Parse Error", e.getMessage().contains("Parse Error: Syntax Error on line 2"));
+			throw e;
+		}
+	}
+	
+	@Test(expected = LessException.class)
+	public void testParseUnbalancedInputUnder() throws IOException, LessException {
+		try {
+			engine.compile(getResource("less/unbalanced-under-error.less"));
+		} catch (LessException e) {
+			assertTrue("Parse Error", e.getMessage().contains("Parse Error: missing closing `}`"));
 			throw e;
 		}
 	}
@@ -161,7 +192,41 @@ public class LessEngineTest {
 	    String result = engine.compile(getResource("less/import-from-subdir.less"));
 	    assertEquals(expected, result);
 	}
+	
+	@Test(expected = LessException.class)
+	public void testImportWithMissingUrl() throws Exception {
+	    try {
+	    	engine.compile(getResource("less/import-missing.less"));
+	    } catch (Exception e) {
+	    	assertTrue("No such file", e.getMessage().contains("No such file"));
+			throw e;
+		}
+	}
+	
+	@Test
+	public void testSample() throws LessException {
+	    String expected = ".box {\n" + 
+			"  color: #fe33ac;\n" + 
+			"  border-color: #fdcdea;\n" + 
+			"}\n" + 
+			".box div {\n" + 
+			"  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);\n" + 
+			"  -webkit-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);\n" + 
+			"  -moz-box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);\n" + 
+			"}\n";
+	    String result = engine.compile(getResource("less/sample.less"));
+	    assertEquals(expected, result);
+	}
 
+	// Test disabled by default, because it requires interent access and depends
+	// on specific less demo. Uncomment to try it.
+	/* @Test
+	public void testRemote() throws LessException, MalformedURLException {
+		String result = engine.compile(new URL(
+				"http://verekia.com/demo/less-css/style.less"));
+		assertTrue(result != null && result.length() > 0);
+	} */
+	
 	private URL getResource(String path) {
 		return getClass().getClassLoader().getResource("META-INF/" + path);
 	}

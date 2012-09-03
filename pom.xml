@@ -1,21 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project 
-	xmlns="http://maven.apache.org/POM/4.0.0" 
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.asual.lesscss</groupId>
 	<artifactId>lesscss-engine</artifactId>
+	<version>1.3.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<name>LESS Engine</name>
-	<version>1.1.5-SNAPSHOT</version>
 	<description>A Java wrapper for LESS (http://lesscss.org). LESS extends CSS with: variables, mixins, operations and nested rules.</description>
 	<url>http://www.asual.com/lesscss</url>
-	
-	<organization>
-		<name>Asual DZZD</name>
-	</organization>
 	
 	<licenses>
 		<license>
@@ -30,6 +23,17 @@
 		<connection>scm:git:git://github.com:asual/lesscss-engine.git</connection>
 		<developerConnection>scm:git:git@github.com:asual/lesscss-engine.git</developerConnection>
 	</scm>
+	
+	<developers>
+		<developer>
+			<name>Rostislav Hristov</name>
+			<email>rostislav@asual.com</email>
+		</developer>
+	</developers>
+	
+	<organization>
+		<name>Asual DZZD</name>
+	</organization>
 	
 	<distributionManagement>
 		<repository>
@@ -53,7 +57,7 @@
 		<dependency>
 			<groupId>org.mozilla</groupId>
 			<artifactId>rhino</artifactId>
-			<version>1.7R3</version>
+			<version>1.7R4</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>
@@ -88,6 +92,7 @@
 					<include>log4j.xml</include>
 					<include>**/*.css</include>
 					<include>**/*.less</include>
+					<include>**/*.html</include>
 				</includes>
 			</testResource>
 		</testResources>
@@ -132,16 +137,14 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
-							<appendAssemblyId>false</appendAssemblyId>
 							<archive>
 								<manifest>
-									<mainClass>com.asual.lesscss.LessEngine</mainClass>
+									<mainClass>com.asual.lesscss.LessEngineCli</mainClass>
 								</manifest>
 							</archive>
 							<descriptors>
 								<descriptor>assembly.xml</descriptor>
 							</descriptors>
-							<finalName>${project.artifactId}-${project.version}-cli</finalName>
 						</configuration>
 					</execution>
 				</executions>
@@ -154,10 +157,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>2.2.1</version>
-				<configuration>
-					<scmCommentPrefix>Fix version and </scmCommentPrefix>
-				</configuration>
+				<version>2.2.2</version>
 			</plugin>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
@@ -178,5 +178,35 @@
 			</plugin>
 		</plugins>
 	</build>
+	
+	<profiles>
+		<profile>
+			<id>release-sign-artifacts</id>
+			<activation>
+				<property>
+					<name>performRelease</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.4</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 	
 </project>
