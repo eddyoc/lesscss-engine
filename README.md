@@ -1,6 +1,16 @@
 LESS Engine w/ Ant Task
 =======================
 
+This fork of cimi's lesscss Ant task is essentially a merge of the latest snapshot of asual's lesscss-engine.
+
+This is to incorporate the fix to the StreamResourceLoader.Pattern such that Windows paths are matched succesfully. See
+https://github.com/asual/lesscss-engine/issues/33
+
+Or in plain English - this version works on Windows, especially useful in those dastardly corporate environments where that
+legacy Microsoft desktop OS still reigns.
+
+The following is the forked readme as is...
+
 This fork of [asual's lesscss engine](http://github.com/asual/lesscss-engine) extends it with an ant task to make it easy
 to place it in ant buildfiles.
 
